@@ -1,12 +1,15 @@
 package nopause.trentpierce.com.nopause;
 
+import android.app.NotificationManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.util.Log;
@@ -20,20 +23,30 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
+
+import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.InterstitialAd;
 import com.google.android.gms.appinvite.AppInviteInvitation;
 import com.google.firebase.analytics.FirebaseAnalytics;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
+   // ImageButton buttonStart, buttonStop;
+    boolean vibenabled;
+    boolean adsenabled;
+    NotificationManager mNotificationManager;
+    boolean unlocked = false;
+    private InterstitialAd interstitial;
    // IInAppBillingService mService;
 
     private static final String TAG = "MainActivity";
     private static final int REQUEST_INVITE = 0;
 
     private AdView mAdView;
+    private InterstitialAd mInterstitialAd;
     private FirebaseAnalytics mFirebaseAnalytics;
 
     @Override
@@ -43,10 +56,39 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        //OnCreate check my shared preferences
+        SharedPreferences mySharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+
+        //Was the app previously unlocked through in app purchase? Set the contentView accordingly
+        boolean unlocked = mySharedPreferences.getBoolean("unlocked", false);
+        if (unlocked == true){
+            //It was unlocked
+            setContentView(R.layout.activity_main);
+        } else{
+            //It was not unlocked
+           // setContentView(R.layout.activity_mainlocked);
+        }
+
+        //Are ads enabled?
+        SharedPreferences mySharedPreferences1 = PreferenceManager.getDefaultSharedPreferences(this);
+        boolean adsenabled = mySharedPreferences1.getBoolean("ad_pref", false);
 //        Intent serviceIntent =
 //                new Intent("com.android.vending.billing.InAppBillingService.BIND");
 //        serviceIntent.setPackage("com.android.vending");
 //        bindService(serviceIntent, mServiceConn, Context.BIND_AUTO_CREATE);
+
+        mInterstitialAd = new InterstitialAd(this);
+        mInterstitialAd.setAdUnitId("ca-app-pub-5038706716632727/6031392982");
+        mInterstitialAd.loadAd(new AdRequest.Builder().build());
+
+        mInterstitialAd.setAdListener(new AdListener() {
+            @Override
+            public void onAdClosed() {
+                // Load the next interstitial.
+                mInterstitialAd.loadAd(new AdRequest.Builder().build());
+            }
+
+        });
 
         mAdView = (AdView) findViewById(R.id.adView);
         AdRequest adRequest = new AdRequest.Builder().build();
@@ -142,6 +184,12 @@ public class MainActivity extends AppCompatActivity
         bundle.putString(FirebaseAnalytics.Param.ITEM_NAME, "stopButton");
         bundle.putString(FirebaseAnalytics.Param.CONTENT_TYPE, "Button");
         mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.SELECT_CONTENT, bundle);
+
+        if (mInterstitialAd.isLoaded()) {
+            mInterstitialAd.show();
+        } else {
+            Log.d("TAG", "The interstitial wasn't loaded yet.");
+        }
     }
 //    @Override
 //    public boolean onCreateOptionsMenu(Menu menu) {
@@ -178,7 +226,13 @@ public class MainActivity extends AppCompatActivity
         } else if (id == R.id.nav_send) {
 
         } else if (id == R.id.nav_share) {
-
+            Intent intent = new AppInviteInvitation.IntentBuilder(getString(R.string.invitation_title))
+                    .setMessage(getString(R.string.invitation_message))
+                    //  .setDeepLink(Uri.parse(getString(R.string.invitation_deep_link)))
+                    //  .setCustomImage(Uri.parse(getString(R.string.invitation_custom_image)))
+                    .setCallToActionText(getString(R.string.invitation_cta))
+                    .build();
+            startActivityForResult(intent, REQUEST_INVITE);
         } else if (id == R.id.nav_settings) {
             Intent intent = new Intent(this, SettingsActivity.class);
             startActivity(intent);
