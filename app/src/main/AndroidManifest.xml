@@ -6,10 +6,22 @@
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <uses-permission android:name="com.android.vending.BILLING" />
+        <!-- for most things, including card.io & paypal -->
+        <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+        <!-- Headset Listener uses this to detect headset events -->
+        <uses-permission android:name="android.permission.ACTION_HEADSET_PLUG" />
+        <!-- USB listener needs these for USB events -->
+        <uses-permission android:name="android.permission.ACTION_POWER_CONNECTED" />
+        <uses-permission android:name="android.permission.ACTION_POWER_DISCONNECTED" />
+        <!-- Bluetooth receiver uses these to detect events -->
+        <uses-permission android:name="android.permission.BLUETOOTH" />
+        <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+        <!-- These are needed by multiple activities for ads, in app purchases, restores, free unlocks, etc. -->
+        <uses-permission android:name="android.permission.INTERNET" />
+        <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
         <activity
             android:name=".MainActivity"
@@ -27,16 +39,6 @@
             android:name=".MainService"
             android:enabled="true"
             android:exported="true" />
-
-        <receiver
-            android:name=".BTReceiver"
-            android:enabled="true"
-            android:exported="true" />
-        <receiver
-            android:name=".USBReceiver"
-            android:enabled="true"
-            android:exported="true" />
-
         <service
             android:name=".MainService2"
             android:enabled="true"
@@ -45,15 +47,25 @@
             android:name=".HeadsetObserverService"
             android:enabled="true"
             android:exported="true" />
-
-        <activity
-            android:name=".SettingsActivity"
-            android:label="@string/title_activity_settings"
-            android:parentActivityName=".MainActivity">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="nopause.trentpierce.com.nopause.MainActivity" />
-        </activity>
+        <receiver
+            android:name=".USBReceiver"
+            android:enabled="true"
+            android:exported="true" >
+            <intent-filter>
+                <action android:name="android.intent.action.ACTION_POWER_CONNECTED" />
+                <action android:name="android.intent.action.ACTION_POWER_DISCONNECTED" />
+            </intent-filter>
+        </receiver>
+        <receiver
+            android:name=".BTReceiver"
+            android:enabled="true"
+            android:exported="true" >
+            <intent-filter>
+                <action android:name="android.bluetooth.device.action.ACL_CONNECTED" />
+                <action android:name="android.bluetooth.device.action.ACL_DISCONNECTED" />
+                <action android:name="android.bluetooth.device.action.ACL_DISCONNECT_REQUESTED" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>

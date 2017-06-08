@@ -4,6 +4,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
+import android.support.design.widget.Snackbar;
+import android.widget.Toast;
 
 /**
  * Developed by Trent Pierce for Pierce Holdings LLC
@@ -34,16 +36,20 @@ public class USBReceiver extends BroadcastReceiver {
         if (action.equals(Intent.ACTION_POWER_CONNECTED)) {
             //Check prefs to see what is enabled
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-            boolean startatUSB = prefs.getBoolean("usbpref", false);
+            boolean startatUSB = prefs.getBoolean("usbSwitch", false);
             boolean vibenabled = prefs.getBoolean("vib_preference", false);
             Intent serviceIntent = new Intent(context, USBReceiver.class);
             context.startService(serviceIntent);
+
+
             //If usb start enabled, start service.
-            if (startatUSB) {
+            if (!startatUSB) {
                 //Determine whether to start standard mode or tablet mode.
                 if (vibenabled) {
+
                     context.startService(new Intent(context, MainService2.class));
                 } else {
+
                     context.startService(new Intent(context, MainService.class));
                 }
             }
@@ -52,12 +58,12 @@ public class USBReceiver extends BroadcastReceiver {
         if (action.equals(Intent.ACTION_POWER_DISCONNECTED)) {
             //CHeck prefs to see what to stop
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-            boolean startatUSB = prefs.getBoolean("usbpref", false);
+            boolean startatUSB = prefs.getBoolean("usbSwitch", false);
             boolean vibenabled = prefs.getBoolean("vib_preference", false);
             Intent serviceIntent = new Intent(context, USBReceiver.class);
             context.stopService(serviceIntent);
             //If USB enabled, stop it.
-            if (startatUSB) {
+            if (!startatUSB) {
                 //Decide whether to stop tablet or standard mode.
                 if (vibenabled) {
                     context.stopService(new Intent(context, MainService2.class));

@@ -9,6 +9,7 @@ import android.content.SharedPreferences;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.util.Log;
+import android.widget.Toast;
 
 /**
  * Developed by Trent Pierce for Pierce Holdings LLC
@@ -32,6 +33,7 @@ import android.util.Log;
 public class HeadsetObserverService extends Service {
 
     private static final String TAG = "HeadsetObserverService";
+    public static final String PREFS_NAME = "NPPrefs";
 
     @Override
     public IBinder onBind(Intent arg0) {
@@ -53,33 +55,35 @@ public class HeadsetObserverService extends Service {
     }
 
     private class HeadsetReceiver extends BroadcastReceiver {
-
         @Override
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction().equals(Intent.ACTION_HEADSET_PLUG)) {
-                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-                boolean vibenabled = prefs.getBoolean("vib_preference", false);
+                Toast.makeText(context, "HS Detected", Toast.LENGTH_LONG).show();
+                SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+                boolean hs_pref = settings.getBoolean("hsSwitch", false);
                 int state = intent.getIntExtra("state", -1);
                 switch (state) {
 
                     case 0:
                         Log.d("unplugged", "Headset was unplugged");
 
-                        if (vibenabled) {
+                        if (!hs_pref) {
                             context.stopService(new Intent(context, MainService2.class));
-                        } else {
-                            context.stopService(new Intent(context, MainService.class));
                         }
+//                        } else {
+//                            context.stopService(new Intent(context, MainService.class));
+//                        }
                         // Cancel notification here
 
                         break;
                     case 1:
                         Log.d("plugged", "Headset is plugged");
-                        if (vibenabled) {
+                        if (!hs_pref) {
                             context.startService(new Intent(context, MainService2.class));
-                        } else {
-                            context.startService(new Intent(context, MainService.class));
                         }
+//                        } else {
+//                            context.startService(new Intent(context, MainService.class));
+//                        }
                         // Show notification
 
                         break;

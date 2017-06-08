@@ -26,6 +26,8 @@ import android.preference.PreferenceManager;
 
 public class BTReceiver extends BroadcastReceiver {
 
+    public static final String PREFS_NAME = "NPPrefs";
+
     //This class catches the Bluetooth connected and disconnected broadcast and enables or disables the service.
 
     @Override
@@ -37,11 +39,11 @@ public class BTReceiver extends BroadcastReceiver {
 
             //Get shared preferences
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-            boolean startatBT = prefs.getBoolean("btpref", false);
+            boolean startatBT = prefs.getBoolean("btSwitch", false);
             boolean vibenabled = prefs.getBoolean("vib_preference", false);
             Intent serviceIntent = new Intent(context, USBReceiver.class);
             context.startService(serviceIntent);
-            if (startatBT) {
+            if (!startatBT) {
 
                 //Decide whether to start tablet mode or standard mode.
                 if (vibenabled) {
@@ -58,11 +60,11 @@ public class BTReceiver extends BroadcastReceiver {
 
             //Get shared preferences
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-            boolean startatBT = prefs.getBoolean("btpref", false);
+            boolean startatBT = prefs.getBoolean("bt_pref", false);
             boolean vibenabled = prefs.getBoolean("vib_preference", false);
             Intent serviceIntent = new Intent(context, USBReceiver.class);
             context.stopService(serviceIntent);
-            if (startatBT) {
+            if (!startatBT) {
 
                 //Decide whether to start tablet mode or standard mode
                 if (vibenabled) {

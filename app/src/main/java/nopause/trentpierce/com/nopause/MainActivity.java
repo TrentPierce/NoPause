@@ -8,8 +8,10 @@ import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Debug;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
+import android.preference.SwitchPreference;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.util.Log;
@@ -23,6 +25,10 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
+import android.widget.CompoundButton;
+import android.widget.Switch;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
@@ -31,8 +37,10 @@ import com.google.android.gms.ads.InterstitialAd;
 import com.google.android.gms.appinvite.AppInviteInvitation;
 import com.google.firebase.analytics.FirebaseAnalytics;
 
+
+
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+        implements NavigationView.OnNavigationItemSelectedListener  {
 
    // ImageButton buttonStart, buttonStop;
     boolean vibenabled;
@@ -49,6 +57,15 @@ public class MainActivity extends AppCompatActivity
     private InterstitialAd mInterstitialAd;
     private FirebaseAnalytics mFirebaseAnalytics;
 
+    private TextView btt;
+    private TextView usbt;
+    private TextView hst;
+    private Switch btSwitch;
+    private Switch usbSwitch;
+    private Switch hsSwitch;
+
+    public static final String PREFS_NAME = "NPPrefs";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -56,26 +73,92 @@ public class MainActivity extends AppCompatActivity
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        //OnCreate check my shared preferences
-        SharedPreferences mySharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        btSwitch = (Switch) findViewById(R.id.btSwitch);
+        usbSwitch = (Switch) findViewById(R.id.usbSwitch);
+        hsSwitch = (Switch) findViewById(R.id.hsSwitch);
 
-        //Was the app previously unlocked through in app purchase? Set the contentView accordingly
-        boolean unlocked = mySharedPreferences.getBoolean("unlocked", false);
-        if (unlocked == true){
-            //It was unlocked
-            setContentView(R.layout.activity_main);
-        } else{
-            //It was not unlocked
-           // setContentView(R.layout.activity_mainlocked);
+        SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+        boolean bt_pref = settings.getBoolean("btSwitch", false);
+        boolean usb_pref = settings.getBoolean("usbSwitch", false);
+        boolean hs_pref = settings.getBoolean("hsSwitch", false);
+        btSwitch.setChecked(bt_pref);
+        usbSwitch.setChecked(usb_pref);
+        hsSwitch.setChecked(hs_pref);
+
+        //attach a listener to check for changes in state
+        btSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView,
+                                         boolean isChecked) {
+
+                if(isChecked){
+
+
+                }else{
+
+                }
+                SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+                SharedPreferences.Editor editor = settings.edit();
+                editor.putBoolean("btSwitch", isChecked);
+                editor.commit();
+            }
+        });
+        usbSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView,
+                                         boolean isChecked) {
+
+                if(isChecked){
+
+                }else{
+
+                }
+                SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+                SharedPreferences.Editor editor = settings.edit();
+                editor.putBoolean("usbSwitch", isChecked);
+                editor.commit();
+            }
+        });
+        hsSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView,
+                                         boolean isChecked) {
+
+                if(isChecked){
+
+                }else{
+
+                }
+                SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+                SharedPreferences.Editor editor = settings.edit();
+                editor.putBoolean("hsSwitch", isChecked);
+                editor.commit();
+            }
+        });
+        //check the current state before we display the screen
+        if(btSwitch.isChecked()){
+
+        }
+        else {
+
+        }
+        if(usbSwitch.isChecked()){
+
+        }
+        else {
+
+        }
+        if(hsSwitch.isChecked()){
+
+        }
+        else {
+
         }
 
-        //Are ads enabled?
-        SharedPreferences mySharedPreferences1 = PreferenceManager.getDefaultSharedPreferences(this);
-        boolean adsenabled = mySharedPreferences1.getBoolean("ad_pref", false);
-//        Intent serviceIntent =
-//                new Intent("com.android.vending.billing.InAppBillingService.BIND");
-//        serviceIntent.setPackage("com.android.vending");
-//        bindService(serviceIntent, mServiceConn, Context.BIND_AUTO_CREATE);
+
 
         mInterstitialAd = new InterstitialAd(this);
         mInterstitialAd.setAdUnitId("ca-app-pub-5038706716632727/6031392982");
@@ -90,26 +173,27 @@ public class MainActivity extends AppCompatActivity
 
         });
 
-        mAdView = (AdView) findViewById(R.id.adView);
-        AdRequest adRequest = new AdRequest.Builder().build();
-        mAdView.loadAd(adRequest);
+            mAdView = (AdView) findViewById(R.id.adView);
+            AdRequest adRequest = new AdRequest.Builder().build();
+            mAdView.loadAd(adRequest);
 
         // Obtain the FirebaseAnalytics instance.
         mFirebaseAnalytics = FirebaseAnalytics.getInstance(this);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new AppInviteInvitation.IntentBuilder(getString(R.string.invitation_title))
-                        .setMessage(getString(R.string.invitation_message))
-                      //  .setDeepLink(Uri.parse(getString(R.string.invitation_deep_link)))
-                      //  .setCustomImage(Uri.parse(getString(R.string.invitation_custom_image)))
-                        .setCallToActionText(getString(R.string.invitation_cta))
-                        .build();
-                startActivityForResult(intent, REQUEST_INVITE);
-            }
-        });
+
+            FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+            fab.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                        Intent intent = new AppInviteInvitation.IntentBuilder(getString(R.string.invitation_title))
+                                .setMessage(getString(R.string.invitation_message))
+                                //  .setDeepLink(Uri.parse(getString(R.string.invitation_deep_link)))
+                                //  .setCustomImage(Uri.parse(getString(R.string.invitation_custom_image)))
+                                .setCallToActionText(getString(R.string.invitation_cta))
+                                .build();
+                        startActivityForResult(intent, REQUEST_INVITE);
+                }
+            });
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -120,6 +204,7 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
     }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -219,9 +304,7 @@ public class MainActivity extends AppCompatActivity
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_upgrade) {
-            // Handle the camera action
-        } else if (id == R.id.nav_view) {
+        if (id == R.id.nav_view) {
 
         } else if (id == R.id.nav_send) {
 
@@ -234,9 +317,6 @@ public class MainActivity extends AppCompatActivity
                     .build();
             startActivityForResult(intent, REQUEST_INVITE);
         } else if (id == R.id.nav_settings) {
-            Intent intent = new Intent(this, SettingsActivity.class);
-            startActivity(intent);
-        } else if (id == R.id.nav_tools) {
 
         }
 
